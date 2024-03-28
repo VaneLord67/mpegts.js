@@ -64,10 +64,18 @@ function getFeatureList() {
     return Features.getFeatureList();
 }
 
+// sei
+export let exportSEI = () => {};
+function setExportSEI(callback) {
+    console.log('设置SEI的回调函数成功');
+    exportSEI = callback;
+}
+
 
 // interfaces
 let mpegts = {};
 
+mpegts.setSEIFunction = setExportSEI;
 mpegts.createPlayer = createPlayer;
 mpegts.isSupported = isSupported;
 mpegts.getFeatureList = getFeatureList;

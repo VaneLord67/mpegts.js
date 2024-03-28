@@ -25,6 +25,7 @@ import {IllegalStateException} from '../utils/exception.js';
 import H265Parser from './h265-parser.js';
 import buffersAreEqual from '../utils/typedarray-equality.ts';
 import AV1OBUParser from './av1-parser.ts';
+import { exportSEI } from '../mpegts.js';
 
 function Swap16(src) {
     return (((src >>> 8) & 0xFF) |
@@ -1407,6 +1408,34 @@ class FLVDemuxer {
 
             if (unitType === 5) {  // IDR
                 keyframe = true;
+            }
+            if (unitType === 6) {
+                // SEI NALU Type 6
+                let payloadType = v.getUint8(offset + lengthSize + 1);
+                // SEI Payload Type 5, User Unregistered Data
+                if (payloadType === 5) {
+                    // parse SEI
+                    let curOffset = offset + lengthSize + 2;
+                    let payloadContentLenght = v.getUint8(curOffset);
+                    // 如果你想读取uuid，就uncomment下面的代码段
+                    // uuid 16个字节 + content data
+                    // let uuid = '';
+                    // for (let i = 1; i <= 16; i++) {
+                    //     let byte = v.getUint8(++curOffset);
+                    //     uuid += (byte < 16 ? '0' : '') + byte.toString(16);
+                    // }
+                    // skip uuid
+                    curOffset += 16;
+                    // read sei content
+                    let payloadContentDataLength = payloadContentLenght - 16;
+                    let asciiString = '';
+                    for (let i = 0; i < payloadContentDataLength; i++) {
+                        let byte = v.getUint8(++curOffset);
+                        asciiString += String.fromCharCode(byte);
+                    }
+                    exportSEI(asciiString);
+                    // console.log('asciiString', asciiString);
+              }
             }
 
             let data = new Uint8Array(arrayBuffer, dataOffset + offset, lengthSize + naluSize);
