@@ -1433,7 +1433,7 @@ class FLVDemuxer {
                         let byte = v.getUint8(++curOffset);
                         asciiString += String.fromCharCode(byte);
                     }
-                    exportSEI(asciiString);
+                    exportSEI(asciiString, (dts + cts) / this._timescale);
                     // console.log('asciiString', asciiString);
               }
             }
